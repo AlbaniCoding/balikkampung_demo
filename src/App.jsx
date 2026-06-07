@@ -61,7 +61,7 @@ function Navbar({ page, setPage }) {
 function HomePage({ setPage }) {
   const features = [
     { icon: "📋", title: "Planner", desc: "To-do list & packing list untuk perjalanan mudik yang terorganisir.", page: "planner", color: "#ede9fe" },
-    { icon: "🗺️", title: "Rute Dan Jadwal", desc: "Peta rute, kalender mudik, dan jadwal kegiatan di kampung halaman.", page: "features", color: "#dbeafe" },
+    { icon: "🗺️", title: "Rute & Jadwal", desc: "Peta rute, kalender mudik, dan jadwal kegiatan di kampung halaman.", page: "features", color: "#dbeafe" },
     { icon: "💰", title: "Budget Tracker", desc: "Pantau pengeluaran transport, makan, tol, dan oleh-oleh dalam satu tempat.", page: "budget", color: "#dcfce7" },
     { icon: "🚑", title: "Bantuan Darurat", desc: "Akses cepat ambulans, derek, bengkel, dan layanan darurat terdekat.", page: "features", color: "#fee2e2" },
     { icon: "👨‍👩‍👧‍👦", title: "Pantau Lokasi Keluarga", desc: "Pantau lokasi keluarga tersayang langsung dari website.", page: "family", color: "#ede9fe" },
