@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BalikKampung.id – Planner</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: { colors: { primary: '#6d28d9', accent: '#f59e0b' } } } }
+</script>
+<style>
+  body { font-family: 'DM Sans', sans-serif; }
+  h1, h2, h3 { font-family: 'Playfair Display', serif; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.5s ease both; }
+  .delay-1 { animation-delay:.1s; }
+  .delay-2 { animation-delay:.2s; }
+
+  .nav-link::after {
+    content:''; position:absolute; left:0; bottom:-2px;
+    width:0; height:2px; background:#f59e0b;
+    transition: width .25s;
+  }
+  .nav-link:hover::after { width:100%; }
+  .nav-link { position:relative; }
+
+  .todo-item:hover .del-btn { opacity:1; }
+  .del-btn { opacity:0; transition:opacity .2s; }
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Navbar -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
+  <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="home.html" class="flex items-center gap-2">
+      <span class="text-2xl">🏡</span>
+      <span style="font-family:'Playfair Display',serif" class="text-xl font-bold text-primary">BalikKampung<span class="text-accent">.id</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-7 text-sm font-medium text-gray-700">
+      <a href="home.html"    class="nav-link hover:text-primary transition">Home</a>
+      <a href="planner.html"  class="nav-link text-primary font-semibold">Planner</a>
+      <a href="features.html" class="nav-link hover:text-primary transition">Features</a>
+      <a href="budget.html"   class="nav-link hover:text-primary transition">Budget</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="border border-primary text-primary px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-50 transition">Sign In</button>
+      <button class="bg-primary text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-800 transition">Login</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Header -->
+<div class="bg-primary text-white py-12 px-6">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-accent text-xs font-semibold uppercase tracking-widest mb-2">Persiapan Mudik</p>
+    <h1 class="text-4xl font-black">Mudik Planner</h1>
+    <p class="text-white/70 mt-2">To-do list & packing list untuk perjalanan yang sempurna.</p>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-6 py-10 grid md:grid-cols-2 gap-8">
+
+  <!-- Todo List -->
+  <div class="fade-up bg-white rounded-2xl shadow p-6">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-xl">✅</div>
+      <h2 class="text-xl font-bold text-gray-800">Mudik To-Do List</h2>
+    </div>
+
+    <div class="flex gap-2 mb-4">
+      <input id="todoInput" class="border border-gray-200 p-2.5 flex-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300" placeholder="Tambah kegiatan..." />
+      <button onclick="addTodo()" class="bg-primary text-white px-4 rounded-lg text-sm font-semibold hover:bg-purple-800 transition">+ Add</button>
+    </div>
+
+    <ul id="todoList" class="space-y-2">
+      <li class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" checked class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm line-through text-gray-400">Konfirmasi tiket perjalanan</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" checked class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm line-through text-gray-400">Cek kondisi kendaraan</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm">Siapkan oleh-oleh untuk keluarga</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm">Tarik tunai / isi e-money</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm">Informasikan tetangga sebelum berangkat</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+    </ul>
+
+    <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-400">
+      <span id="todoCount">2 / 5 selesai</span>
+      <button onclick="clearDone('todoList')" class="hover:text-red-400 transition">Hapus yang selesai</button>
+    </div>
+  </div>
+
+  <!-- Packing List -->
+  <div class="fade-up delay-1 bg-white rounded-2xl shadow p-6">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-xl">🧳</div>
+      <h2 class="text-xl font-bold text-gray-800">Packing List</h2>
+    </div>
+
+    <div class="flex gap-2 mb-4">
+      <input id="itemInput" class="border border-gray-200 p-2.5 flex-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300" placeholder="Tambah item..." />
+      <button onclick="addItem()" class="bg-primary text-white px-4 rounded-lg text-sm font-semibold hover:bg-purple-800 transition">+ Add</button>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="flex gap-2 mb-3 flex-wrap">
+      <button onclick="filterPack('all')"     class="pack-tab active text-xs px-3 py-1 rounded-full bg-purple-600 text-white">Semua</button>
+      <button onclick="filterPack('pakaian')" class="pack-tab text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">👕 Pakaian</button>
+      <button onclick="filterPack('dokumen')" class="pack-tab text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">📄 Dokumen</button>
+      <button onclick="filterPack('lainnya')" class="pack-tab text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">🎒 Lainnya</button>
+    </div>
+
+    <ul id="itemList" class="space-y-2">
+      <li data-cat="pakaian" class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" checked class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm line-through text-gray-400">Baju untuk 5 hari</span>
+        <span class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">Pakaian</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li data-cat="lainnya" class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" checked class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm line-through text-gray-400">Perlengkapan mandi</span>
+        <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Lainnya</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li data-cat="lainnya" class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm">Charger & power bank</span>
+        <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Lainnya</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li data-cat="dokumen" class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm">Dokumen perjalanan / KTP</span>
+        <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">Dokumen</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li data-cat="lainnya" class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm">Snack untuk perjalanan</span>
+        <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Lainnya</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+      <li data-cat="lainnya" class="todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+        <span class="flex-1 text-sm">Obat-obatan dasar</span>
+        <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Lainnya</span>
+        <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+      </li>
+    </ul>
+
+    <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-400">
+      <span id="itemCount">2 / 6 dikemas</span>
+      <button onclick="clearDone('itemList')" class="hover:text-red-400 transition">Hapus yang selesai</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- CTA to Budget -->
+<div class="max-w-6xl mx-auto px-6 pb-10">
+  <div class="bg-gradient-to-r from-primary to-purple-400 text-white rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div>
+      <h3 class="font-bold text-lg">Lanjut ke Budget Tracker?</h3>
+      <p class="text-white/70 text-sm">Rencanakan anggaran mudikmu agar tidak over budget.</p>
+    </div>
+    <a href="budget.html" class="bg-white text-primary font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-gray-100 transition whitespace-nowrap">
+      Kelola Budget →
+    </a>
+  </div>
+</div>
+
+<footer class="text-center text-sm text-gray-400 py-6">
+  BalikKampung.id — Prototype Design Thinking Project
+</footer>
+
+<script>
+function addTodo() {
+  const input = document.getElementById('todoInput');
+  if (!input.value.trim()) return;
+  const li = document.createElement('li');
+  li.className = 'todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl';
+  li.innerHTML = `
+    <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+    <span class="flex-1 text-sm">${input.value}</span>
+    <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+  `;
+  document.getElementById('todoList').appendChild(li);
+  input.value = '';
+  updateCount('todoList', 'todoCount', 'selesai');
+}
+
+function addItem() {
+  const input = document.getElementById('itemInput');
+  if (!input.value.trim()) return;
+  const li = document.createElement('li');
+  li.className = 'todo-item flex items-center gap-3 p-3 bg-gray-50 rounded-xl';
+  li.dataset.cat = 'lainnya';
+  li.innerHTML = `
+    <input type="checkbox" class="w-4 h-4 accent-purple-600" onchange="toggleDone(this)">
+    <span class="flex-1 text-sm">${input.value}</span>
+    <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Lainnya</span>
+    <button class="del-btn text-gray-300 hover:text-red-400 text-xs" onclick="delItem(this)">✕</button>
+  `;
+  document.getElementById('itemList').appendChild(li);
+  input.value = '';
+  updateCount('itemList', 'itemCount', 'dikemas');
+}
+
+function toggleDone(cb) {
+  const span = cb.closest('li').querySelector('span.flex-1');
+  if (cb.checked) {
+    span.classList.add('line-through', 'text-gray-400');
+  } else {
+    span.classList.remove('line-through', 'text-gray-400');
+  }
+  updateCount('todoList', 'todoCount', 'selesai');
+  updateCount('itemList', 'itemCount', 'dikemas');
+}
+
+function delItem(btn) {
+  btn.closest('li').remove();
+  updateCount('todoList', 'todoCount', 'selesai');
+  updateCount('itemList', 'itemCount', 'dikemas');
+}
+
+function clearDone(listId) {
+  document.querySelectorAll(`#${listId} li`).forEach(li => {
+    if (li.querySelector('input[type=checkbox]')?.checked) li.remove();
+  });
+  updateCount('todoList', 'todoCount', 'selesai');
+  updateCount('itemList', 'itemCount', 'dikemas');
+}
+
+function updateCount(listId, countId, label) {
+  const items = document.querySelectorAll(`#${listId} li`);
+  const done  = document.querySelectorAll(`#${listId} input[type=checkbox]:checked`).length;
+  const el = document.getElementById(countId);
+  if (el) el.textContent = `${done} / ${items.length} ${label}`;
+}
+
+function filterPack(cat) {
+  document.querySelectorAll('.pack-tab').forEach(t => {
+    t.classList.remove('bg-purple-600','text-white');
+    t.classList.add('bg-gray-100','text-gray-600');
+  });
+  event.target.classList.add('bg-purple-600','text-white');
+  event.target.classList.remove('bg-gray-100','text-gray-600');
+
+  document.querySelectorAll('#itemList li').forEach(li => {
+    li.style.display = (cat === 'all' || li.dataset.cat === cat) ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>

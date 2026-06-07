@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BalikKampung.id – Hotel & Reschedule</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#6d28d9',accent:'#f59e0b'}}}}</script>
+<style>
+  body{font-family:'DM Sans',sans-serif;}
+  h1,h2,h3{font-family:'Playfair Display',serif;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .5s ease both}
+  .delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}
+  .nav-link{position:relative}
+  .nav-link::after{content:'';position:absolute;left:0;bottom:-2px;width:0;height:2px;background:#f59e0b;transition:width .25s}
+  .nav-link:hover::after{width:100%}
+  .tab-active{background:#6d28d9;color:white}
+  .hotel-card{transition:transform .2s,box-shadow .2s}
+  .hotel-card:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(0,0,0,.12)}
+  .star{color:#f59e0b}
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Navbar -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
+  <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="home.html" class="flex items-center gap-2">
+      <span class="text-2xl">🏡</span>
+      <span style="font-family:'Playfair Display',serif" class="text-xl font-bold text-primary">BalikKampung<span class="text-accent">.id</span></span>
+    </a>
+    <div class="home md:flex items-center gap-5 text-sm font-medium text-gray-700">
+      <a href="home.html"    class="nav-link hover:text-primary transition">Home</a>
+      <a href="planner.html"  class="nav-link hover:text-primary transition">Planner</a>
+      <a href="features.html" class="nav-link hover:text-primary transition">Features</a>
+      <a href="budget.html"   class="nav-link hover:text-primary transition">Budget</a>
+      <a href="explore.html"  class="nav-link hover:text-primary transition">Explore</a>
+      <a href="family.html"   class="nav-link hover:text-primary transition">Family</a>
+      <a href="hotel.html"    class="nav-link text-primary font-semibold">Hotel</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="border border-primary text-primary px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-50 transition">Sign In</button>
+      <button class="bg-primary text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-800 transition">Login</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Tab Header -->
+<div class="bg-primary text-white py-10 px-6">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-accent text-xs font-semibold uppercase tracking-widest mb-2">Perjalanan & Penginapan</p>
+    <h1 class="text-4xl font-black mb-5">Hotel & Reschedule</h1>
+    <div class="flex gap-3">
+      <button onclick="switchTab('hotel')" id="tab-hotel" class="tab-active px-5 py-2 rounded-xl text-sm font-semibold transition">🏨 Booking Hotel</button>
+      <button onclick="switchTab('reschedule')" id="tab-reschedule" class="bg-white/20 px-5 py-2 rounded-xl text-sm font-semibold transition hover:bg-white/30">🔄 Reschedule Travel</button>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-6 py-8">
+
+  <!-- ===== HOTEL TAB ===== -->
+  <div id="section-hotel">
+
+    <!-- Search -->
+    <div class="fade-up bg-white rounded-2xl shadow p-5 mb-6">
+      <h2 class="font-bold text-gray-800 mb-4">Cari Hotel</h2>
+      <div class="grid md:grid-cols-4 gap-3">
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">Kota Tujuan</label>
+          <input id="hotelCity" class="border border-gray-200 p-2.5 rounded-xl text-sm w-full" placeholder="Bandung" value="Bandung"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">Check-in</label>
+          <input type="date" id="checkin" class="border border-gray-200 p-2.5 rounded-xl text-sm w-full"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">Check-out</label>
+          <input type="date" id="checkout" class="border border-gray-200 p-2.5 rounded-xl text-sm w-full"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">&nbsp;</label>
+          <button onclick="searchHotels()" class="bg-primary text-white rounded-xl p-2.5 text-sm font-semibold w-full hover:bg-purple-800 transition">Cari Hotel →</button>
+        </div>
+      </div>
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-2 mt-4">
+        <button onclick="filterHotel(0)" class="filter-pill text-xs border border-gray-200 px-3 py-1 rounded-full text-gray-600 hover:border-primary hover:text-primary transition">Semua</button>
+        <button onclick="filterHotel(1)" class="filter-pill text-xs border border-gray-200 px-3 py-1 rounded-full text-gray-600 hover:border-primary hover:text-primary transition">⭐ Bintang 3+</button>
+        <button onclick="filterHotel(2)" class="filter-pill text-xs border border-gray-200 px-3 py-1 rounded-full text-gray-600 hover:border-primary hover:text-primary transition">💰 &lt; Rp500rb</button>
+        <button onclick="filterHotel(3)" class="filter-pill text-xs border border-gray-200 px-3 py-1 rounded-full text-gray-600 hover:border-primary hover:text-primary transition">🅿️ Ada Parkir</button>
+        <button onclick="filterHotel(4)" class="filter-pill text-xs border border-gray-200 px-3 py-1 rounded-full text-gray-600 hover:border-primary hover:text-primary transition">🍳 Sarapan</button>
+      </div>
+    </div>
+
+    <!-- Hotel Grid -->
+    <div id="hotelGrid" class="grid md:grid-cols-3 gap-5"></div>
+
+  </div>
+
+  <!-- ===== RESCHEDULE TAB ===== -->
+  <div id="section-reschedule" class="hidden">
+
+    <!-- Existing Bookings -->
+    <div class="fade-up bg-white rounded-2xl shadow p-6 mb-6">
+      <h2 class="font-bold text-gray-800 mb-4">Tiket / Pemesanan Aktif</h2>
+      <div class="space-y-3" id="bookingList">
+        <div class="border border-gray-100 rounded-2xl p-4 flex flex-col md:flex-row md:items-center gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">🚆</div>
+            <div>
+              <p class="font-bold text-gray-800">Kereta Argo Parahyangan</p>
+              <p class="text-xs text-gray-400">Bandung → Gambir</p>
+            </div>
+          </div>
+          <div class="flex gap-4 text-sm text-gray-600 flex-1 flex-wrap">
+            <span>📅 Rabu, 1 Apr 2025</span>
+            <span>🕗 07.00 WIB</span>
+            <span>🪑 Kelas Eksekutif</span>
+          </div>
+          <div class="flex gap-2 ml-auto">
+            <span class="bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-full font-medium">Confirmed</span>
+            <button onclick="openReschedule('Kereta Argo Parahyangan','1 Apr 2025','07.00')" class="bg-primary text-white text-xs px-4 py-1.5 rounded-xl font-semibold hover:bg-purple-800 transition">Reschedule</button>
+          </div>
+        </div>
+
+        <div class="border border-gray-100 rounded-2xl p-4 flex flex-col md:flex-row md:items-center gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">🏨</div>
+            <div>
+              <p class="font-bold text-gray-800">Hotel Papandayan Bandung</p>
+              <p class="text-xs text-gray-400">Check-in 2 Apr – Check-out 5 Apr</p>
+            </div>
+          </div>
+          <div class="flex gap-4 text-sm text-gray-600 flex-1 flex-wrap">
+            <span>🛏️ Deluxe Room × 2</span>
+            <span>💰 Rp1.800.000</span>
+          </div>
+          <div class="flex gap-2 ml-auto">
+            <span class="bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-full font-medium">Pending</span>
+            <button onclick="openReschedule('Hotel Papandayan','2 Apr 2025','Check-in')" class="bg-primary text-white text-xs px-4 py-1.5 rounded-xl font-semibold hover:bg-purple-800 transition">Reschedule</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- Hotel Detail Modal -->
+<div id="hotelModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+    <div id="hotelModalContent"></div>
+  </div>
+</div>
+
+<!-- Reschedule Modal -->
+<div id="rescheduleModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+    <h3 class="font-bold text-gray-800 text-lg mb-1">🔄 Reschedule</h3>
+    <p id="rescheduleTarget" class="text-sm text-gray-400 mb-5"></p>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs font-semibold text-gray-500 block mb-1">Tanggal Baru</label>
+        <input type="date" id="newDate" class="border border-gray-200 p-2.5 rounded-xl text-sm w-full focus:outline-none focus:ring-2 focus:ring-purple-200"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 block mb-1">Jam Keberangkatan Baru</label>
+        <select id="newTime" class="border border-gray-200 p-2.5 rounded-xl text-sm w-full focus:outline-none">
+          <option>05.00 WIB</option><option>07.00 WIB</option><option>09.00 WIB</option>
+          <option>11.00 WIB</option><option>13.00 WIB</option><option>15.00 WIB</option><option>17.00 WIB</option>
+        </select>
+      </div>
+      <div class="bg-amber-50 rounded-xl p-3 text-xs text-amber-700">
+        ⚠️ Biaya reschedule: <b>Rp50.000</b> per tiket. Reschedule bisa dilakukan maksimal <b>H-2</b> keberangkatan.
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button onclick="confirmReschedule()" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-800 transition">Konfirmasi Reschedule</button>
+        <button onclick="document.getElementById('rescheduleModal').classList.add('hidden')" class="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm hover:bg-gray-50">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="text-center text-sm text-gray-400 py-6">BalikKampung.id — Prototype Design Thinking Project</footer>
+
+<script>
+const hotels = [
+  {name:'Grand Preanger',stars:5,price:850000,img:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80',loc:'Jl. Asia Afrika, Bandung',rating:4.8,facilities:['🅿️ Parkir','🍳 Sarapan','🏊 Kolam','📶 WiFi'],desc:'Hotel bersejarah bintang 5 di jantung kota Bandung.',stars_num:5},
+  {name:'Hotel Papandayan',stars:5,price:720000,img:'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=80',loc:'Jl. Gatot Subroto, Bandung',rating:4.7,facilities:['🅿️ Parkir','🍳 Sarapan','💆 Spa','📶 WiFi'],desc:'Hotel mewah dengan pemandangan kota yang menawan.',stars_num:5},
+  {name:'Aston Primera Pasteur',stars:4,price:480000,img:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=80',loc:'Jl. Dr. Djunjunan, Bandung',rating:4.5,facilities:['🅿️ Parkir','🍳 Sarapan','📶 WiFi'],desc:'Strategis dekat pintu tol Pasteur, cocok untuk transit.',stars_num:4},
+  {name:'Ibis Bandung Trans Studio',stars:3,price:320000,img:'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&q=80',loc:'Jl. Gatot Subroto, Bandung',rating:4.3,facilities:['🅿️ Parkir','📶 WiFi'],desc:'Hotel modern dekat Trans Studio Mall.',stars_num:3},
+  {name:'Novotel Bandung',stars:4,price:560000,img:'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&q=80',loc:'Jl. Cihampelas, Bandung',rating:4.6,facilities:['🅿️ Parkir','🍳 Sarapan','🏊 Kolam','📶 WiFi'],desc:'Hotel internasional di kawasan Cihampelas yang ramai.',stars_num:4},
+  {name:'The Luxton',stars:4,price:440000,img:'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&q=80',loc:'Jl. Ir. H. Juanda, Bandung',rating:4.4,facilities:['🅿️ Parkir','🍳 Sarapan','📶 WiFi'],desc:'Nuansa butik modern di kawasan Dago yang sejuk.',stars_num:4},
+];
+
+let filteredHotels = [...hotels];
+
+function renderHotels(data) {
+  document.getElementById('hotelGrid').innerHTML = data.map((h,i)=>`
+    <div class="hotel-card fade-up bg-white rounded-2xl shadow overflow-hidden cursor-pointer" onclick="openHotelModal(${hotels.indexOf(h)})">
+      <img src="${h.img}" class="w-full object-cover" style="height:160px" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80'"/>
+      <div class="p-4">
+        <div class="flex items-start justify-between mb-1">
+          <h3 class="font-bold text-gray-800 text-sm leading-tight">${h.name}</h3>
+          <span class="text-amber-400 text-xs ml-2 whitespace-nowrap">${'★'.repeat(h.stars_num)}</span>
+        </div>
+        <p class="text-xs text-gray-400 mb-2">📍 ${h.loc}</p>
+        <div class="flex flex-wrap gap-1 mb-3">
+          ${h.facilities.map(f=>`<span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">${f}</span>`).join('')}
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-primary font-bold text-base">Rp${(h.price/1000).toFixed(0)}rb</span>
+            <span class="text-xs text-gray-400">/malam</span>
+          </div>
+          <span class="text-xs text-amber-500 font-semibold">⭐ ${h.rating}</span>
+        </div>
+        <button class="mt-3 w-full bg-primary text-white py-2 rounded-xl text-xs font-semibold hover:bg-purple-800 transition" onclick="event.stopPropagation();openHotelModal(${hotels.indexOf(h)})">
+          Pesan Sekarang
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterHotel(type) {
+  if(type===0) filteredHotels=[...hotels];
+  else if(type===1) filteredHotels=hotels.filter(h=>h.stars_num>=3);
+  else if(type===2) filteredHotels=hotels.filter(h=>h.price<500000);
+  else if(type===3) filteredHotels=hotels.filter(h=>h.facilities.some(f=>f.includes('Parkir')));
+  else if(type===4) filteredHotels=hotels.filter(h=>h.facilities.some(f=>f.includes('Sarapan')));
+  renderHotels(filteredHotels);
+}
+
+function searchHotels() {
+  renderHotels(filteredHotels);
+}
+
+function openHotelModal(idx) {
+  const h = hotels[idx];
+  document.getElementById('hotelModalContent').innerHTML = `
+    <img src="${h.img}" class="w-full rounded-t-2xl object-cover" style="height:220px" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80'"/>
+    <div class="p-6">
+      <div class="flex items-start justify-between mb-1">
+        <h3 class="font-bold text-gray-800 text-xl">${h.name}</h3>
+        <span class="text-amber-400">${'★'.repeat(h.stars_num)}</span>
+      </div>
+      <p class="text-sm text-gray-400 mb-2">📍 ${h.loc}</p>
+      <p class="text-sm text-gray-600 mb-4">${h.desc}</p>
+      <div class="flex flex-wrap gap-2 mb-4">
+        ${h.facilities.map(f=>`<span class="text-xs bg-purple-50 text-primary px-3 py-1 rounded-full">${f}</span>`).join('')}
+      </div>
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <span class="text-2xl font-black text-primary">Rp${h.price.toLocaleString('id-ID')}</span>
+          <span class="text-sm text-gray-400"> / malam</span>
+        </div>
+        <span class="text-amber-500 font-bold">⭐ ${h.rating}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">Check-in</label>
+          <input type="date" id="modal_checkin" class="border border-gray-200 p-2 rounded-xl text-sm w-full"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">Check-out</label>
+          <input type="date" id="modal_checkout" class="border border-gray-200 p-2 rounded-xl text-sm w-full"/>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="proceedPayment('${h.name}',${h.price})" class="flex-1 bg-primary text-white py-3 rounded-xl text-sm font-bold hover:bg-purple-800 transition">
+          💳 Bayar Sekarang
+        </button>
+        <button onclick="document.getElementById('hotelModal').classList.add('hidden')" class="border border-gray-200 text-gray-600 px-4 py-3 rounded-xl text-sm hover:bg-gray-50">Tutup</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('hotelModal').classList.remove('hidden');
+  document.getElementById('hotelModal').classList.add('flex');
+}
+
+function proceedPayment(name, price) {
+  document.getElementById('hotelModal').classList.add('hidden');
+  // Navigate to payment page
+  window.location.href = `payment.html?item=${encodeURIComponent(name)}&amount=${price}`;
+}
+
+function switchTab(tab) {
+  document.getElementById('section-hotel').classList.toggle('hidden', tab!=='hotel');
+  document.getElementById('section-reschedule').classList.toggle('hidden', tab!=='reschedule');
+  document.getElementById('tab-hotel').className = tab==='hotel' ? 'tab-active px-5 py-2 rounded-xl text-sm font-semibold transition' : 'bg-white/20 px-5 py-2 rounded-xl text-sm font-semibold transition hover:bg-white/30';
+  document.getElementById('tab-reschedule').className = tab==='reschedule' ? 'tab-active px-5 py-2 rounded-xl text-sm font-semibold transition' : 'bg-white/20 px-5 py-2 rounded-xl text-sm font-semibold transition hover:bg-white/30';
+}
+
+let rescheduleItem = '';
+function openReschedule(name, date, time) {
+  rescheduleItem = name;
+  document.getElementById('rescheduleTarget').textContent = `${name} · Jadwal saat ini: ${date} ${time}`;
+  document.getElementById('rescheduleModal').classList.remove('hidden');
+  document.getElementById('rescheduleModal').classList.add('flex');
+}
+
+function confirmReschedule() {
+  const date = document.getElementById('newDate').value;
+  const time = document.getElementById('newTime').value;
+  if(!date) return alert('Pilih tanggal baru!');
+  document.getElementById('rescheduleModal').classList.add('hidden');
+  alert(`✅ Reschedule berhasil!\n${rescheduleItem}\nJadwal baru: ${date} · ${time}\n\nBiaya reschedule Rp50.000 akan ditagihkan.`);
+}
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  renderHotels(hotels);
+  // Check URL tab
+  if(window.location.hash==='#reschedule') switchTab('reschedule');
+});
+
+document.getElementById('hotelModal').addEventListener('click', function(e){
+  if(e.target===this) this.classList.add('hidden');
+});
+</script>
+</body>
+</html>

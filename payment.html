@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BalikKampung.id – Payment</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#6d28d9',accent:'#f59e0b'}}}}</script>
+<style>
+  body{font-family:'DM Sans',sans-serif;}
+  h1,h2,h3{font-family:'Playfair Display',serif;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .5s ease both}
+  .delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}
+  .nav-link{position:relative}
+  .nav-link::after{content:'';position:absolute;left:0;bottom:-2px;width:0;height:2px;background:#f59e0b;transition:width .25s}
+  .nav-link:hover::after{width:100%}
+
+  .bank-card{
+    cursor:pointer;
+    transition:all .2s;
+    border:2px solid #e5e7eb;
+  }
+  .bank-card:hover{border-color:#6d28d9;box-shadow:0 0 0 4px rgba(109,40,217,.1)}
+  .bank-card.selected{border-color:#6d28d9;background:#f5f3ff;box-shadow:0 0 0 4px rgba(109,40,217,.15)}
+
+  @keyframes countDown{from{stroke-dashoffset:0}to{stroke-dashoffset:283}}
+  .timer-ring{animation:countDown 900s linear forwards}
+
+  @keyframes slideIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  .slide-in{animation:slideIn .4s ease both}
+
+  .va-code{
+    font-family:'Playfair Display',serif;
+    letter-spacing:.15em;
+    font-weight:900;
+    font-size:1.6rem;
+  }
+
+  @keyframes success{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+  .success-icon{animation:success .5s ease both}
+
+  .copy-flash{transition:background .15s}
+  .copy-flash:active{background:#d8b4fe}
+
+  /* Bank logo backgrounds */
+  .bca-bg{background:linear-gradient(135deg,#005bac,#1976d2)}
+  .mandiri-bg{background:linear-gradient(135deg,#003d7c,#0d6ca8)}
+  .bri-bg{background:linear-gradient(135deg,#005ca8,#1a78c2)}
+  .seabank-bg{background:linear-gradient(135deg,#2e7d32,#43a047)}
+  .bni-bg{background:linear-gradient(135deg,#e65100,#f57c00)}
+  .gopay-bg{background:linear-gradient(135deg,#00aed6,#00c6f7)}
+
+  .step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+  .step-active{background:#6d28d9;color:white}
+  .step-done{background:#22c55e;color:white}
+  .step-idle{background:#e5e7eb;color:#9ca3af}
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Navbar -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
+  <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="home.html" class="flex items-center gap-2">
+      <span class="text-2xl">🏡</span>
+      <span style="font-family:'Playfair Display',serif" class="text-xl font-bold text-primary">BalikKampung<span class="text-accent">.id</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-5 text-sm font-medium text-gray-700">
+      <a href="home.html"    class="nav-link hover:text-primary transition">Home</a>
+      <a href="hotel.html"    class="nav-link hover:text-primary transition">Hotel</a>
+      <a href="explore.html"  class="nav-link hover:text-primary transition">Explore</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="bg-gradient-to-br from-primary via-purple-600 to-indigo-600 text-white py-10 px-6">
+  <div class="max-w-2xl mx-auto text-center">
+    <p class="text-accent text-xs font-semibold uppercase tracking-widest mb-2">Pembayaran Aman</p>
+    <h1 class="text-3xl font-black">Pembayaran</h1>
+    <!-- Steps -->
+    <div class="flex items-center justify-center gap-2 mt-5">
+      <div class="step-dot step-done" id="s1">✓</div>
+      <div class="h-0.5 w-8 bg-green-400"></div>
+      <div class="step-dot step-active" id="s2">2</div>
+      <div class="h-0.5 w-8 bg-white/30"></div>
+      <div class="step-dot step-idle" id="s3">3</div>
+    </div>
+    <div class="flex justify-center gap-12 mt-1 text-xs text-white/60">
+      <span>Detail</span><span>Pilih Bank</span><span>Bayar</span>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-2xl mx-auto px-6 py-8 space-y-5">
+
+  <!-- Order Summary -->
+  <div class="fade-up bg-white rounded-2xl shadow p-5">
+    <h2 class="font-bold text-gray-800 mb-3">Ringkasan Pesanan</h2>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Item</span>
+        <span id="orderItem" class="font-medium text-gray-800">Hotel Papandayan Bandung</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Harga per malam</span>
+        <span id="orderBase" class="font-medium text-gray-800">Rp720.000</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Biaya platform</span>
+        <span class="font-medium text-gray-800">Rp5.000</span>
+      </div>
+      <div class="border-t border-gray-100 pt-2 flex justify-between font-bold text-base">
+        <span class="text-gray-800">Total</span>
+        <span id="orderTotal" class="text-primary">Rp725.000</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bank Selection -->
+  <div id="bankSection" class="fade-up delay-1 bg-white rounded-2xl shadow p-5">
+    <h2 class="font-bold text-gray-800 mb-1">Pilih Metode Pembayaran</h2>
+    <p class="text-xs text-gray-400 mb-4">Transfer Virtual Account ke bank pilihanmu</p>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="bankGrid">
+
+      <div class="bank-card rounded-2xl p-4 flex flex-col items-center gap-2" onclick="selectBank('bca')" id="bank-bca">
+        <div class="bca-bg w-14 h-14 rounded-xl flex items-center justify-center shadow">
+          <span class="text-white font-black text-sm tracking-tight">BCA</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-700">Bank BCA</span>
+        <span class="text-xs text-gray-400">Virtual Account</span>
+      </div>
+
+      <div class="bank-card rounded-2xl p-4 flex flex-col items-center gap-2" onclick="selectBank('mandiri')" id="bank-mandiri">
+        <div class="mandiri-bg w-14 h-14 rounded-xl flex items-center justify-center shadow">
+          <span class="text-white font-black text-xs tracking-tight text-center leading-tight">MANDIRI</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-700">Mandiri</span>
+        <span class="text-xs text-gray-400">Virtual Account</span>
+      </div>
+
+      <div class="bank-card rounded-2xl p-4 flex flex-col items-center gap-2" onclick="selectBank('bri')" id="bank-bri">
+        <div class="bri-bg w-14 h-14 rounded-xl flex items-center justify-center shadow">
+          <span class="text-white font-black text-sm tracking-tight">BRI</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-700">Bank BRI</span>
+        <span class="text-xs text-gray-400">Virtual Account</span>
+      </div>
+
+      <div class="bank-card rounded-2xl p-4 flex flex-col items-center gap-2" onclick="selectBank('seabank')" id="bank-seabank">
+        <div class="seabank-bg w-14 h-14 rounded-xl flex items-center justify-center shadow">
+          <span class="text-white font-black text-xs tracking-tight">SeaBank</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-700">SeaBank</span>
+        <span class="text-xs text-gray-400">Virtual Account</span>
+      </div>
+
+      <div class="bank-card rounded-2xl p-4 flex flex-col items-center gap-2" onclick="selectBank('bni')" id="bank-bni">
+        <div class="bni-bg w-14 h-14 rounded-xl flex items-center justify-center shadow">
+          <span class="text-white font-black text-sm tracking-tight">BNI</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-700">Bank BNI</span>
+        <span class="text-xs text-gray-400">Virtual Account</span>
+      </div>
+
+      <div class="bank-card rounded-2xl p-4 flex flex-col items-center gap-2" onclick="selectBank('gopay')" id="bank-gopay">
+        <div class="gopay-bg w-14 h-14 rounded-xl flex items-center justify-center shadow">
+          <span class="text-white font-black text-xs tracking-tight">GoPay</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-700">GoPay</span>
+        <span class="text-xs text-gray-400">E-Wallet</span>
+      </div>
+
+    </div>
+
+    <button id="generateBtn" onclick="generateVA()" class="mt-5 w-full bg-primary text-white py-3 rounded-xl font-bold text-sm hover:bg-purple-800 transition opacity-40 cursor-not-allowed" disabled>
+      Generate Kode Pembayaran →
+    </button>
+  </div>
+
+  <!-- VA Code Section (hidden until generated) -->
+  <div id="vaSection" class="hidden fade-up delay-2 bg-white rounded-2xl shadow overflow-hidden">
+
+    <!-- Bank header bar -->
+    <div id="vaBankBar" class="bca-bg text-white px-6 py-4 flex items-center justify-between">
+      <div>
+        <p class="text-xs text-white/70">Virtual Account</p>
+        <p class="font-bold text-lg" id="vaBankName">BCA</p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs text-white/70">Bayar sebelum</p>
+        <p class="font-bold text-sm" id="vaExpiry">—</p>
+      </div>
+    </div>
+
+    <div class="p-6">
+
+      <!-- VA Number -->
+      <div class="text-center mb-6">
+        <p class="text-xs text-gray-400 mb-2 uppercase tracking-widest font-semibold">Nomor Virtual Account</p>
+        <div class="flex items-center justify-center gap-3">
+          <span id="vaNumber" class="va-code text-primary"></span>
+          <button onclick="copyVA()" class="copy-flash bg-purple-50 text-primary text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-purple-100 transition" id="copyBtn">
+            Salin
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Kode berlaku selama <b>15 menit</b></p>
+      </div>
+
+      <!-- Timer -->
+      <div class="flex items-center justify-center mb-6">
+        <div class="relative w-20 h-20">
+          <svg class="w-20 h-20 -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" stroke-width="8"/>
+            <circle id="timerCircle" cx="50" cy="50" r="45" fill="none" stroke="#6d28d9" stroke-width="8"
+              stroke-dasharray="283" stroke-dashoffset="0" stroke-linecap="round"/>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span id="timerText" class="font-black text-primary text-sm">15:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Amount -->
+      <div class="bg-purple-50 rounded-xl p-4 text-center mb-5">
+        <p class="text-xs text-gray-500 mb-1">Jumlah yang harus dibayar</p>
+        <p class="text-2xl font-black text-primary" id="vaAmount">Rp725.000</p>
+        <p class="text-xs text-red-500 mt-1">⚠️ Transfer <b>tepat sesuai nominal</b> termasuk kode unik</p>
+      </div>
+
+      <!-- How to pay -->
+      <div class="bg-gray-50 rounded-xl p-4 mb-5">
+        <p class="text-xs font-bold text-gray-700 mb-2">Cara Bayar:</p>
+        <ol id="howToPay" class="text-xs text-gray-500 space-y-1 list-decimal list-inside"></ol>
+      </div>
+
+      <!-- Simulate payment -->
+      <button onclick="simulatePaid()" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold text-sm hover:bg-green-600 transition">
+        ✅ Simulasi Pembayaran Berhasil
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Success Screen (hidden) -->
+  <div id="successSection" class="hidden slide-in bg-white rounded-2xl shadow p-8 text-center">
+    <div class="success-icon text-6xl mb-4">🎉</div>
+    <h2 class="text-2xl font-black text-gray-800 mb-2">Pembayaran Berhasil!</h2>
+    <p class="text-gray-500 text-sm mb-5">Pesananmu telah dikonfirmasi. Selamat mudik!</p>
+    <div class="bg-green-50 rounded-xl p-4 mb-6 text-left space-y-2 text-sm">
+      <div class="flex justify-between"><span class="text-gray-500">Item</span><span id="succItem" class="font-semibold text-gray-800"></span></div>
+      <div class="flex justify-between"><span class="text-gray-500">Metode</span><span id="succBank" class="font-semibold text-gray-800"></span></div>
+      <div class="flex justify-between"><span class="text-gray-500">Total</span><span id="succTotal" class="font-bold text-green-600"></span></div>
+      <div class="flex justify-between"><span class="text-gray-500">No. Transaksi</span><span id="succTrx" class="font-mono text-xs text-gray-500"></span></div>
+    </div>
+    <div class="flex gap-3">
+      <a href="index.html" class="flex-1 border border-primary text-primary py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-50 transition text-center">Kembali ke Home</a>
+      <button onclick="downloadReceipt()" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-800 transition">📄 Unduh Bukti</button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="text-center text-sm text-gray-400 py-6">BalikKampung.id — Prototype Design Thinking Project</footer>
+
+<script>
+// Parse URL params
+const params = new URLSearchParams(window.location.search);
+const itemName  = params.get('item')  || 'Hotel Papandayan Bandung';
+const basePrice = parseInt(params.get('amount') || 720000);
+const fee = 5000;
+const total = basePrice + fee;
+
+document.getElementById('orderItem').textContent  = itemName;
+document.getElementById('orderBase').textContent  = 'Rp' + basePrice.toLocaleString('id-ID');
+document.getElementById('orderTotal').textContent = 'Rp' + total.toLocaleString('id-ID');
+
+let selectedBank = '';
+let timerInterval = null;
+
+const bankInfo = {
+  bca:     { name:'BCA',     prefix:'7777',  bg:'bca-bg',     label:'BCA Virtual Account',     color:'#005bac' },
+  mandiri: { name:'Mandiri', prefix:'88888', bg:'mandiri-bg', label:'Mandiri Virtual Account', color:'#003d7c' },
+  bri:     { name:'BRI',     prefix:'26215', bg:'bri-bg',     label:'BRI Virtual Account',     color:'#005ca8' },
+  seabank: { name:'SeaBank', prefix:'50000', bg:'seabank-bg', label:'SeaBank VA',              color:'#2e7d32' },
+  bni:     { name:'BNI',     prefix:'88800', bg:'bni-bg',     label:'BNI Virtual Account',     color:'#e65100' },
+  gopay:   { name:'GoPay',   prefix:'GoPay', bg:'gopay-bg',   label:'GoPay E-Wallet',         color:'#00aed6' },
+};
+
+const howToPaySteps = {
+  bca:     ['Login BCA mobile / ATM BCA','Pilih menu Transfer > Virtual Account','Masukkan nomor VA di atas','Pastikan nominal sesuai','Konfirmasi dan simpan bukti'],
+  mandiri: ['Login Livin by Mandiri','Pilih Bayar > Virtual Account','Masukkan nomor VA','Verifikasi nominal','Selesaikan pembayaran'],
+  bri:     ['Login BRImo / ATM BRI','Pilih Pembayaran > BRIVA','Masukkan nomor VA','Cek nominal dan bayar','Simpan struk pembayaran'],
+  seabank: ['Buka aplikasi SeaBank','Pilih Transfer > Virtual Account','Input nomor VA','Konfirmasi jumlah transfer','Selesai'],
+  bni:     ['Login BNI Mobile / ATM BNI','Pilih Transfer > Virtual Account','Masukkan nomor VA BNI','Pastikan nominal tepat','Konfirmasi transaksi'],
+  gopay:   ['Buka GoPay di GoJek','Pilih Bayar > Scan / Transfer','Masukkan nominal tepat','Konfirmasi dengan PIN','Transaksi selesai'],
+};
+
+function selectBank(bank) {
+  selectedBank = bank;
+  document.querySelectorAll('.bank-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('bank-'+bank).classList.add('selected');
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = false;
+  btn.classList.remove('opacity-40','cursor-not-allowed');
+}
+
+function generateVA() {
+  if(!selectedBank) return;
+  const b = bankInfo[selectedBank];
+  // Generate random VA number
+  const rand = Math.floor(Math.random()*9000000000)+1000000000;
+  const vaNum = b.prefix + rand.toString().slice(0,6);
+
+  // Show VA section
+  document.getElementById('bankSection').classList.add('hidden');
+  const vaSection = document.getElementById('vaSection');
+  vaSection.classList.remove('hidden');
+
+  // Update step indicator
+  document.getElementById('s2').className = 'step-dot step-done';
+  document.getElementById('s2').textContent = '✓';
+  document.getElementById('s3').className = 'step-dot step-active';
+
+  // Fill VA info
+  document.getElementById('vaNumber').textContent = vaNum.replace(/(.{4})/g,'$1 ').trim();
+  document.getElementById('vaBankName').textContent = b.name;
+  document.getElementById('vaAmount').textContent = 'Rp' + total.toLocaleString('id-ID');
+
+  // Expiry: 15 minutes from now
+  const expiry = new Date(Date.now() + 15*60*1000);
+  document.getElementById('vaExpiry').textContent = expiry.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) + ' WIB';
+
+  // Bank bar color
+  const bar = document.getElementById('vaBankBar');
+  bar.className = b.bg + ' text-white px-6 py-4 flex items-center justify-between';
+
+  // How to pay
+  document.getElementById('howToPay').innerHTML = (howToPaySteps[selectedBank]||[]).map((s,i)=>`<li>${s}</li>`).join('');
+
+  // Timer
+  startTimer(15*60, vaNum);
+}
+
+function startTimer(seconds, vaNum) {
+  if(timerInterval) clearInterval(timerInterval);
+  let remaining = seconds;
+  const circle = document.getElementById('timerCircle');
+  const total = 283;
+
+  function tick() {
+    const m = Math.floor(remaining/60);
+    const s = remaining%60;
+    document.getElementById('timerText').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    const progress = (1 - remaining/seconds)*total;
+    circle.style.strokeDashoffset = progress;
+    if(remaining===0){
+      clearInterval(timerInterval);
+      document.getElementById('vaSection').innerHTML = `
+        <div class="p-8 text-center">
+          <div class="text-5xl mb-3">⏰</div>
+          <h3 class="font-bold text-gray-800 text-lg mb-2">Kode Kedaluwarsa</h3>
+          <p class="text-sm text-gray-400 mb-4">Waktu pembayaran habis. Silakan generate ulang.</p>
+          <button onclick="location.reload()" class="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold">Generate Ulang</button>
+        </div>`;
+    }
+    remaining--;
+  }
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+function copyVA() {
+  const text = document.getElementById('vaNumber').textContent.replace(/\s/g,'');
+  navigator.clipboard.writeText(text).catch(()=>{});
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = '✓ Disalin!';
+  setTimeout(()=>btn.textContent='Salin',2000);
+}
+
+function simulatePaid() {
+  clearInterval(timerInterval);
+  document.getElementById('vaSection').classList.add('hidden');
+  const successEl = document.getElementById('successSection');
+  successEl.classList.remove('hidden');
+
+  document.getElementById('succItem').textContent  = itemName;
+  document.getElementById('succBank').textContent  = bankInfo[selectedBank]?.label || selectedBank;
+  document.getElementById('succTotal').textContent = 'Rp' + total.toLocaleString('id-ID');
+  document.getElementById('succTrx').textContent   = 'TRX-' + Date.now().toString(36).toUpperCase();
+
+  // Step done
+  document.getElementById('s3').className = 'step-dot step-done';
+  document.getElementById('s3').textContent = '✓';
+}
+
+function downloadReceipt() {
+  alert('📄 Bukti pembayaran sedang diunduh...\n(Dalam versi produksi, ini akan menghasilkan PDF resmi)');
+}
+</script>
+</body>
+</html>

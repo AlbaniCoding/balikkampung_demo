@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BalikKampung.id – Family Tracker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#6d28d9',accent:'#f59e0b'}}}}</script>
+<style>
+  body{font-family:'DM Sans',sans-serif;}
+  h1,h2,h3{font-family:'Playfair Display',serif;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .5s ease both}
+  .delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}
+  .nav-link{position:relative}
+  .nav-link::after{content:'';position:absolute;left:0;bottom:-2px;width:0;height:2px;background:#f59e0b;transition:width .25s}
+  .nav-link:hover::after{width:100%}
+
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
+  .pulse-dot{animation:pulse 2s ease-in-out infinite}
+
+  @keyframes ping{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.5);opacity:0}}
+  .ping{animation:ping 1.5s ease-out infinite}
+
+  .member-card{transition:all .2s}
+  .member-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(0,0,0,.1)}
+
+  .status-online{background:#22c55e}
+  .status-moving{background:#f59e0b}
+  .status-stopped{background:#ef4444}
+
+  .copy-btn:active{transform:scale(.95)}
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Navbar -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
+  <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="home.html" class="flex items-center gap-2">
+      <span class="text-2xl">🏡</span>
+      <span style="font-family:'Playfair Display',serif" class="text-xl font-bold text-primary">BalikKampung<span class="text-accent">.id</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-5 text-sm font-medium text-gray-700">
+      <a href="home.html"    class="nav-link hover:text-primary transition">Home</a>
+      <a href="planner.html"  class="nav-link hover:text-primary transition">Planner</a>
+      <a href="features.html" class="nav-link hover:text-primary transition">Features</a>
+      <a href="budget.html"   class="nav-link hover:text-primary transition">Budget</a>
+      <a href="explore.html"  class="nav-link hover:text-primary transition">Explore</a>
+      <a href="family.html"   class="nav-link text-primary font-semibold">Family</a>
+      <a href="hotel.html"    class="nav-link hover:text-primary transition">Hotel</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="border border-primary text-primary px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-50 transition">Sign In</button>
+      <button class="bg-primary text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-800 transition">Login</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="bg-gradient-to-br from-emerald-600 to-emerald-400 text-white py-12 px-6">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-emerald-100 text-xs font-semibold uppercase tracking-widest mb-2">Mudik Bersama</p>
+    <h1 class="text-4xl font-black">Family Share Location</h1>
+    <p class="text-white/80 mt-2">Pantau posisi semua anggota keluarga dalam perjalanan mudik — real time, satu layar.</p>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-6 py-8 space-y-6">
+
+  <!-- Room Code Banner -->
+  <div class="fade-up bg-white rounded-2xl shadow p-5 flex flex-col md:flex-row items-center gap-4">
+    <div class="flex-1">
+      <p class="text-xs text-gray-400 font-semibold uppercase tracking-widest mb-1">Kode Grup Keluargamu</p>
+      <div class="flex items-center gap-3">
+        <span id="roomCode" class="text-3xl font-black text-primary tracking-widest" style="font-family:'Playfair Display',serif">MKG-2025</span>
+        <button class="copy-btn bg-purple-50 text-primary text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-purple-100 transition" onclick="copyCode()">Salin Kode</button>
+      </div>
+      <p class="text-xs text-gray-400 mt-1">Bagikan kode ini ke anggota keluarga agar bisa bergabung.</p>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="shareGroup()" class="bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition">📤 Share ke WhatsApp</button>
+      <button onclick="newCode()" class="border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">🔄 Buat Kode Baru</button>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <!-- Map -->
+    <div class="md:col-span-2 fade-up delay-1 bg-white rounded-2xl shadow overflow-hidden">
+      <div class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 flex items-center justify-between">
+        <span>🗺️ Peta Perjalanan Keluarga — Live</span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 bg-green-300 rounded-full pulse-dot"></span>
+          <span>Live Update</span>
+        </span>
+      </div>
+      <!-- Interactive canvas map -->
+      <div class="relative bg-gray-100" style="height:360px">
+        <iframe class="w-full h-full" src="https://maps.google.com/maps?q=cipularang+toll+java&t=&z=9&ie=UTF8&iwloc=&output=embed" allowfullscreen></iframe>
+        <!-- Overlay avatars (visual sim) -->
+        <div class="absolute top-4 right-4 flex flex-col gap-2 z-10">
+          <div id="liveStatus" class="bg-white rounded-xl shadow px-3 py-2 text-xs font-semibold text-emerald-600">
+            🟢 4 anggota aktif
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member List -->
+    <div class="fade-up delay-2 bg-white rounded-2xl shadow p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-gray-800">Anggota Perjalanan</h2>
+        <button onclick="addMemberModal()" class="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-semibold">+ Tambah</button>
+      </div>
+
+      <div id="memberList" class="space-y-3"></div>
+
+      <!-- Join group -->
+      <div class="mt-5 pt-4 border-t border-gray-100">
+        <p class="text-xs text-gray-400 mb-2">Punya kode grup?</p>
+        <div class="flex gap-2">
+          <input id="joinCode" class="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-purple-200 uppercase tracking-widest" placeholder="MKG-XXXX" maxlength="8"/>
+          <button onclick="joinGroup()" class="bg-emerald-500 text-white px-3 rounded-lg text-sm font-semibold hover:bg-emerald-600 transition">Gabung</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Convoy Status -->
+  <div class="fade-up bg-white rounded-2xl shadow p-6">
+    <h2 class="font-bold text-gray-800 mb-4">Status Konvoi</h2>
+    <div class="grid md:grid-cols-4 gap-4">
+      <div class="bg-green-50 rounded-xl p-4 text-center">
+        <p class="text-2xl font-black text-green-600" style="font-family:'Playfair Display',serif">4</p>
+        <p class="text-xs text-gray-500 mt-1">Kendaraan Aktif</p>
+      </div>
+      <div class="bg-purple-50 rounded-xl p-4 text-center">
+        <p class="text-2xl font-black text-primary" style="font-family:'Playfair Display',serif">142 km</p>
+        <p class="text-xs text-gray-500 mt-1">Jarak Ditempuh</p>
+      </div>
+      <div class="bg-amber-50 rounded-xl p-4 text-center">
+        <p class="text-2xl font-black text-amber-600" style="font-family:'Playfair Display',serif">~2 Jam</p>
+        <p class="text-xs text-gray-500 mt-1">Estimasi Tiba</p>
+      </div>
+      <div class="bg-blue-50 rounded-xl p-4 text-center">
+        <p class="text-2xl font-black text-blue-600" style="font-family:'Playfair Display',serif">87 km/h</p>
+        <p class="text-xs text-gray-500 mt-1">Kecepatan Rata-rata</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat / Ping -->
+  <div class="fade-up bg-white rounded-2xl shadow p-6">
+    <h2 class="font-bold text-gray-800 mb-4">💬 Chat Konvoi</h2>
+    <div id="chatBox" class="bg-gray-50 rounded-xl p-4 space-y-3 mb-3" style="height:180px;overflow-y:auto">
+      <div class="flex gap-2"><span class="text-lg">👨‍👩‍👧‍👦</span><div class="bg-white rounded-xl px-3 py-2 shadow-sm text-sm"><b>Papa:</b> Gas terus ya, macet di KM 72</div></div>
+      <div class="flex gap-2"><span class="text-lg">🚗</span><div class="bg-white rounded-xl px-3 py-2 shadow-sm text-sm"><b>Kak Rini:</b> Oke, kami udah lewat. Lanjut!</div></div>
+      <div class="flex gap-2"><span class="text-lg">🚙</span><div class="bg-white rounded-xl px-3 py-2 shadow-sm text-sm"><b>Paman Budi:</b> Rest area KM 97 yuk istirahat dulu 15 menit</div></div>
+      <div class="flex gap-2"><span class="text-lg">👨‍👩‍👧‍👦</span><div class="bg-white rounded-xl px-3 py-2 shadow-sm text-sm"><b>Papa:</b> Setuju! 👍</div></div>
+    </div>
+    <div class="flex gap-2">
+      <input id="chatInput" class="border border-gray-200 rounded-xl px-4 py-2.5 flex-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-200" placeholder="Kirim pesan ke konvoi..."/>
+      <button onclick="sendChat()" class="bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition">Kirim</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Add Member Modal -->
+<div id="modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+    <h3 class="font-bold text-gray-800 mb-4">Tambah Anggota</h3>
+    <input id="memberName" class="border border-gray-200 rounded-xl px-4 py-2.5 w-full text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-purple-200" placeholder="Nama anggota..."/>
+    <select id="memberEmoji" class="border border-gray-200 rounded-xl px-4 py-2.5 w-full text-sm mb-4 focus:outline-none">
+      <option value="👨‍👩‍👧‍👦">👨‍👩‍👧‍👦 Keluarga Inti</option>
+      <option value="🚗">🚗 Mobil 1</option>
+      <option value="🚙">🚙 Mobil 2</option>
+      <option value="🏍️">🏍️ Motor</option>
+      <option value="🧑‍🦳">🧑‍🦳 Kakek/Nenek</option>
+    </select>
+    <div class="flex gap-2">
+      <button onclick="confirmAdd()" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-800 transition">Tambah</button>
+      <button onclick="closeModal()" class="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm hover:bg-gray-50 transition">Batal</button>
+    </div>
+  </div>
+</div>
+
+<footer class="text-center text-sm text-gray-400 py-6">BalikKampung.id — Prototype Design Thinking Project</footer>
+
+<script>
+const members = [
+  {name:'Papa (Kamu)',emoji:'👨‍👩‍👧‍👦',status:'moving',loc:'KM 142 Cipularang',speed:'90 km/h'},
+  {name:'Kak Rini',emoji:'🚗',status:'moving',loc:'KM 135 Cipularang',speed:'85 km/h'},
+  {name:'Paman Budi',emoji:'🚙',status:'stopped',loc:'Rest Area KM 97',speed:'0 km/h'},
+  {name:'Nenek Sari',emoji:'🧑‍🦳',status:'online',loc:'Depok – belum berangkat',speed:'–'},
+];
+
+const statusLabel = {moving:'Bergerak',stopped:'Berhenti',online:'Menunggu'};
+const statusColor = {moving:'bg-amber-400',stopped:'bg-red-400',online:'bg-green-400'};
+
+function renderMembers() {
+  document.getElementById('memberList').innerHTML = members.map((m,i) => `
+    <div class="member-card bg-gray-50 rounded-xl p-3 flex items-center gap-3 cursor-pointer">
+      <span class="text-2xl">${m.emoji}</span>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-gray-800 truncate">${m.name}</p>
+        <p class="text-xs text-gray-400 truncate">${m.loc}</p>
+      </div>
+      <div class="flex flex-col items-end gap-1">
+        <span class="flex items-center gap-1 text-xs font-medium">
+          <span class="w-2 h-2 rounded-full ${statusColor[m.status]}"></span>
+          ${statusLabel[m.status]}
+        </span>
+        <span class="text-xs text-gray-400">${m.speed}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function copyCode() {
+  const code = document.getElementById('roomCode').textContent;
+  navigator.clipboard.writeText(code).catch(()=>{});
+  const btn = event.target;
+  btn.textContent = '✓ Disalin!';
+  setTimeout(()=>btn.textContent='Salin Kode', 2000);
+}
+
+function newCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'MKG-';
+  for(let i=0;i<4;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('roomCode').textContent = code;
+}
+
+function shareGroup() {
+  const code = document.getElementById('roomCode').textContent;
+  const msg = `Yuk gabung ke grup konvoi mudik keluarga kita di BalikKampung.id! Kode: ${code}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function joinGroup() {
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  if(!code) return alert('Masukkan kode grup!');
+  alert(`Berhasil bergabung ke grup: ${code}`);
+}
+
+function addMemberModal() {
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('modal').classList.add('flex');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('modal').classList.remove('flex');
+}
+
+function confirmAdd() {
+  const name = document.getElementById('memberName').value.trim();
+  const emoji = document.getElementById('memberEmoji').value;
+  if(!name) return;
+  members.push({name,emoji,status:'online',loc:'Lokasi tidak diketahui',speed:'–'});
+  renderMembers();
+  closeModal();
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  if(!input.value.trim()) return;
+  const box = document.getElementById('chatBox');
+  const div = document.createElement('div');
+  div.className = 'flex gap-2';
+  div.innerHTML = `<span class="text-lg">👨‍👩‍👧‍👦</span><div class="bg-purple-100 rounded-xl px-3 py-2 shadow-sm text-sm"><b>Papa (Kamu):</b> ${input.value}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  input.value = '';
+}
+
+// Simulate live location update
+setInterval(() => {
+  members.forEach(m => {
+    if(m.status === 'moving') {
+      const km = parseInt(m.loc.match(/\d+/)?.[0]||0);
+      m.loc = `KM ${km+1} Cipularang`;
+    }
+  });
+  renderMembers();
+}, 5000);
+
+renderMembers();
+</script>
+</body>
+</html>

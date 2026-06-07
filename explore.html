@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BalikKampung.id – Explore</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#6d28d9',accent:'#f59e0b'}}}}</script>
+<style>
+  body{font-family:'DM Sans',sans-serif;}
+  h1,h2,h3{font-family:'Playfair Display',serif;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .5s ease both}
+  .delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}
+  .nav-link{position:relative}
+  .nav-link::after{content:'';position:absolute;left:0;bottom:-2px;width:0;height:2px;background:#f59e0b;transition:width .25s}
+  .nav-link:hover::after{width:100%}
+  .tab-btn.active{background:#6d28d9;color:white}
+  .place-card{transition:transform .2s,box-shadow .2s}
+  .place-card:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(0,0,0,.12)}
+  .pill{cursor:pointer;transition:all .2s}
+  .pill.active{background:#6d28d9;color:white;border-color:#6d28d9}
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Navbar -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
+  <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="home.html" class="flex items-center gap-2">
+      <span class="text-2xl">🏡</span>
+      <span style="font-family:'Playfair Display',serif" class="text-xl font-bold text-primary">BalikKampung<span class="text-accent">.id</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-5 text-sm font-medium text-gray-700">
+      <a href="home.html"    class="nav-link hover:text-primary transition">Home</a>
+      <a href="planner.html"  class="nav-link hover:text-primary transition">Planner</a>
+      <a href="features.html" class="nav-link hover:text-primary transition">Features</a>
+      <a href="budget.html"   class="nav-link hover:text-primary transition">Budget</a>
+      <a href="explore.html"  class="nav-link text-primary font-semibold">Explore</a>
+      <a href="family.html"   class="nav-link hover:text-primary transition">Family</a>
+      <a href="hotel.html"    class="nav-link hover:text-primary transition">Hotel</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="border border-primary text-primary px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-50 transition">Sign In</button>
+      <button class="bg-primary text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-800 transition">Login</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="bg-gradient-to-br from-primary to-purple-400 text-white py-12 px-6">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-accent text-xs font-semibold uppercase tracking-widest mb-2">Temukan di Sekitarmu</p>
+    <h1 class="text-4xl font-black">Explore Terdekat</h1>
+    <p class="text-white/70 mt-2">Wisata, kuliner, ATM, dan rest area di sekitar lokasi kamu.</p>
+    <!-- Search -->
+    <div class="mt-5 flex gap-3 max-w-lg">
+      <input id="searchCity" class="flex-1 rounded-xl px-4 py-2.5 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Cari kota / lokasi (contoh: Bandung)..." />
+      <button onclick="doSearch()" class="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-yellow-600 transition">Cari</button>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-6 py-8">
+
+  <!-- Category Pills -->
+  <div class="flex flex-wrap gap-2 mb-6">
+    <button class="pill active border border-primary text-primary px-4 py-1.5 rounded-full text-sm font-medium" onclick="setCategory('wisata',this)">🏞️ Wisata</button>
+    <button class="pill border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium" onclick="setCategory('kuliner',this)">🍜 Kuliner</button>
+    <button class="pill border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium" onclick="setCategory('atm',this)">🏧 ATM / Bank</button>
+    <button class="pill border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium" onclick="setCategory('restarea',this)">🛣️ Rest Area</button>
+  </div>
+
+  <!-- Map placeholder + cards side by side -->
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <!-- Map -->
+    <div class="md:col-span-2 fade-up bg-white rounded-2xl shadow overflow-hidden">
+      <div id="mapLabel" class="bg-primary text-white text-xs font-semibold px-4 py-2">📍 Menampilkan Wisata di Bandung</div>
+      <iframe id="mapFrame" class="w-full" style="height:380px"
+        src="https://maps.google.com/maps?q=wisata+bandung&t=&z=12&ie=UTF8&iwloc=&output=embed"
+        allowfullscreen></iframe>
+    </div>
+
+    <!-- Results List -->
+    <div class="fade-up delay-1 flex flex-col gap-3">
+      <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Hasil Terdekat</p>
+      <div id="placeList" class="flex flex-col gap-3 overflow-y-auto" style="max-height:400px"></div>
+    </div>
+
+  </div>
+
+  <!-- Detail Section per Category -->
+  <div id="detailSection" class="mt-8"></div>
+
+</main>
+
+<footer class="text-center text-sm text-gray-400 py-6">BalikKampung.id — Prototype Design Thinking Project</footer>
+
+<script>
+const DATA = {
+  wisata: {
+    label:'🏞️ Wisata di Bandung',
+    query:'wisata+bandung',
+    places:[
+      {name:'Kawah Putih',dist:'42 km',rating:'4.8',cat:'Alam',icon:'🌋',desc:'Danau vulkanik berwarna putih kehijauan yang memukau.'},
+      {name:'Tangkuban Perahu',dist:'28 km',rating:'4.6',cat:'Alam',icon:'🏔️',desc:'Gunung berapi aktif dengan kawah yang bisa dikunjungi.'},
+      {name:'Dago Pakar',dist:'8 km',rating:'4.5',cat:'Alam',icon:'🌿',desc:'Hutan pinus dengan jalur trekking yang segar.'},
+      {name:'Trans Studio Bandung',dist:'3 km',rating:'4.7',cat:'Hiburan',icon:'🎢',desc:'Theme park indoor terbesar di Asia Tenggara.'},
+      {name:'Farmhouse Lembang',dist:'20 km',rating:'4.4',cat:'Agrowisata',icon:'🐄',desc:'Nuansa Eropa dengan aktivitas peternakan.'},
+    ]
+  },
+  kuliner: {
+    label:'🍜 Kuliner di Bandung',
+    query:'kuliner+restoran+bandung',
+    places:[
+      {name:'Nasi Timbel Bawean',dist:'1.2 km',rating:'4.7',cat:'Sunda',icon:'🍚',desc:'Nasi timbel daun pisang dengan lauk lengkap khas Sunda.'},
+      {name:'Batagor Kingsley',dist:'2.1 km',rating:'4.8',cat:'Jajanan',icon:'🍢',desc:'Batagor legendaris Bandung sejak 1966.'},
+      {name:'Mie Kocok Mang Dadeng',dist:'0.8 km',rating:'4.9',cat:'Mie',icon:'🍜',desc:'Mie kocok dengan ceker dan kikil yang melimpah.'},
+      {name:'Seblak Juara',dist:'1.5 km',rating:'4.5',cat:'Pedas',icon:'🌶️',desc:'Seblak kuah kencur dengan level kepedasan pilihan.'},
+      {name:'Sate Kambing Pak Budi',dist:'3.0 km',rating:'4.6',cat:'Grilled',icon:'🍖',desc:'Sate kambing muda empuk dengan bumbu kacang spesial.'},
+    ]
+  },
+  atm: {
+    label:'🏧 ATM & Bank Terdekat',
+    query:'ATM+bank+bandung',
+    places:[
+      {name:'ATM BCA – Mall BIP',dist:'0.4 km',rating:'',cat:'BCA',icon:'🏧',desc:'Tersedia tarik tunai & setor tunai. Buka 24 jam.'},
+      {name:'ATM Mandiri – Braga',dist:'0.7 km',rating:'',cat:'Mandiri',icon:'🏧',desc:'ATM Mandiri & CDM tersedia. Buka 24 jam.'},
+      {name:'Bank BRI – Jl. Asia Afrika',dist:'1.1 km',rating:'',cat:'BRI',icon:'🏦',desc:'Kantor cabang lengkap dengan layanan teller.'},
+      {name:'ATM BNI – Stasiun Bandung',dist:'0.9 km',rating:'',cat:'BNI',icon:'🏧',desc:'ATM 24 jam di area stasiun, mudah diakses.'},
+      {name:'ATM SeaBank – Alfamart',dist:'0.3 km',rating:'',cat:'SeaBank',icon:'🏧',desc:'ATM cashless SeaBank tersedia di minimarket.'},
+    ]
+  },
+  restarea: {
+    label:'🛣️ Rest Area Terdekat',
+    query:'rest+area+tol+jawa+barat',
+    places:[
+      {name:'Rest Area KM 97 Cipularang',dist:'12 km',rating:'4.3',cat:'Tol',icon:'⛽',desc:'SPBU, toilet, food court, mushola. Arah Jakarta.'},
+      {name:'Rest Area KM 72 Cipularang',dist:'28 km',rating:'4.1',cat:'Tol',icon:'🍔',desc:'McDonald\'s, KFC, minimarket, ATM tersedia.'},
+      {name:'Rest Area KM 57 Cipularang',dist:'43 km',rating:'4.0',cat:'Tol',icon:'🚻',desc:'Toilet, SPBU, dan warung makan lokal.'},
+      {name:'Rest Area Padalarang',dist:'5 km',rating:'4.5',cat:'Tol',icon:'⛽',desc:'Rest area terbaru dengan fasilitas lengkap.'},
+      {name:'Rest Area KM 102',dist:'17 km',rating:'4.2',cat:'Tol',icon:'🏪',desc:'Indomaret, food stall, dan area parkir luas.'},
+    ]
+  }
+};
+
+let currentCat = 'wisata';
+
+function setCategory(cat, el) {
+  currentCat = cat;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  const d = DATA[cat];
+  document.getElementById('mapLabel').textContent = '📍 ' + d.label;
+  document.getElementById('mapFrame').src = `https://maps.google.com/maps?q=${d.query}&t=&z=12&ie=UTF8&iwloc=&output=embed`;
+  renderList(d.places);
+}
+
+function doSearch() {
+  const city = document.getElementById('searchCity').value.trim() || 'bandung';
+  const d = DATA[currentCat];
+  const q = d.query.replace(/bandung|jawa\+barat/g, city.replace(/ /g,'+'));
+  document.getElementById('mapFrame').src = `https://maps.google.com/maps?q=${q}&t=&z=12&ie=UTF8&iwloc=&output=embed`;
+}
+
+function renderList(places) {
+  const el = document.getElementById('placeList');
+  el.innerHTML = places.map(p => `
+    <div class="place-card bg-white rounded-xl shadow-sm p-3 border border-gray-100 cursor-pointer" onclick="showDetail('${p.name}')">
+      <div class="flex items-start gap-2">
+        <span class="text-2xl">${p.icon}</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-gray-800 text-sm truncate">${p.name}</p>
+          <p class="text-xs text-gray-500 mt-0.5">${p.desc}</p>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="text-xs bg-purple-50 text-primary px-2 py-0.5 rounded-full">${p.cat}</span>
+            <span class="text-xs text-gray-400">📍 ${p.dist}</span>
+            ${p.rating ? `<span class="text-xs text-amber-500">⭐ ${p.rating}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showDetail(name) {
+  const all = Object.values(DATA).flatMap(d=>d.places);
+  const p = all.find(x=>x.name===name);
+  if(!p) return;
+  document.getElementById('detailSection').innerHTML = `
+    <div class="bg-white rounded-2xl shadow p-6 border-l-4 border-primary">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-3xl">${p.icon}</span>
+        <div>
+          <h3 class="text-lg font-bold text-gray-800">${p.name}</h3>
+          <p class="text-xs text-gray-400">${p.cat} • ${p.dist} dari lokasi kamu</p>
+        </div>
+        ${p.rating ? `<span class="ml-auto text-sm font-bold text-amber-500">⭐ ${p.rating}</span>` : ''}
+      </div>
+      <p class="text-sm text-gray-600 mb-4">${p.desc}</p>
+      <div class="flex gap-2">
+        <button class="bg-primary text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-800 transition">🗺️ Buka Maps</button>
+        <button class="border border-primary text-primary px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-50 transition">📌 Simpan</button>
+      </div>
+    </div>`;
+}
+
+window.addEventListener('DOMContentLoaded', () => setCategory('wisata', document.querySelector('.pill')));
+</script>
+</body>
+</html>
